@@ -1,7 +1,4 @@
-// const API_URL = "https://script.google.com/macros/s/AKfycbzw5fQxF08EcGq3MvR0yOZ2u8SMpdKtxgiXLFQACB2KbWE8xALxs7d1_QNqX598z6o/exec";
-// const API_URL = "https://script.google.com/macros/s/AKfycbznDlXbdmZay2KMah9hjQOENeWh1-dwCa-0Nz_SABxZB7ebYGfUbw8hoJLdgbmYhdT5/exec";
-const API_URL = "https://script.google.com/macros/s/AKfycby5Cllb00KjTVGVOCueRai6kP1cE5jBvkOpToJAKQiHgG0SGM_IssSnBoZDpyNsag1_fg/exec";
-const EMAIL_URL = "https://script.google.com/macros/s/AKfycby5Cllb00KjTVGVOCueRai6kP1cE5jBvkOpToJAKQiHgG0SGM_IssSnBoZDpyNsag1_fg/exec"; // Replace with your Email.gs deployment URL
+const API_URL = "https://script.google.com/macros/s/AKfycbw3JN2juEzBgebxtpIqZ9ncpqbRE6PyfCo-dWsbkugTmOgy43Yw6JUgWr5CFG-JGS2QTA/exec";
 
 let slideIndex = 0;
 let totalSlides = 0;
@@ -343,7 +340,7 @@ if (contactForm) {
     formStatus.className = '';
     
     try {
-      const response = await fetch(EMAIL_URL, {
+      const response = await fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify(data)
       });
