@@ -62,6 +62,7 @@ function doPost(e) {
           .content { padding: 20px 0; line-height: 1.6; color: #333; }
           .info-box { background: #f9f9f9; padding: 15px; border-left: 4px solid #237cc4; margin: 15px 0; border-radius: 4px; }
           .footer { text-align: center; color: #888; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 14px; }
+          .compeny-name{color: #237cc4;}
         </style>
       </head>
       <body>
