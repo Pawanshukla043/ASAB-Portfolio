@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbw3JN2juEzBgebxtpIqZ9ncpqbRE6PyfCo-dWsbkugTmOgy43Yw6JUgWr5CFG-JGS2QTA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx53c-qnxjUMB_T5p8xZrxaMvXxATvDW5rxjUbIqp9p0mA7oJGrxyB8MH0-4IMvJq9Piw/exec";
 
 let slideIndex = 0;
 let totalSlides = 0;
