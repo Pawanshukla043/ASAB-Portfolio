@@ -1,8 +1,47 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbx53c-qnxjUMB_T5p8xZrxaMvXxATvDW5rxjUbIqp9p0mA7oJGrxyB8MH0-4IMvJq9Piw/exec";
+const CACHE_KEY = "asb_portfolio_data";
+const CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 
 let slideIndex = 0;
 let sliderInterval = null;
 let shortsSwiper = null;
+
+/* ================= CACHE FUNCTIONS ================= */
+
+function getCachedData() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+
+    const cached = JSON.parse(raw);
+    const now = Date.now();
+
+    // Check if cache has expired
+    if (now - cached.timestamp > CACHE_EXPIRY_MS) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+
+    return cached.data;
+  } catch (e) {
+    // If localStorage is unavailable or data is corrupted, return null
+    console.warn("Cache read failed:", e);
+    return null;
+  }
+}
+
+function setCachedData(data) {
+  try {
+    const payload = {
+      timestamp: Date.now(),
+      data: data
+    };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+  } catch (e) {
+    // If localStorage is full or unavailable, silently fail
+    console.warn("Cache write failed:", e);
+  }
+}
 
 /* ================= UTILITY FUNCTIONS ================= */
 
@@ -23,114 +62,109 @@ function safeSetInnerText(idOrEl, content) {
   if (el) el.innerText = content || "";
 }
 
-/* ================= MAIN LOADER ================= */
+/* ================= RENDER CONTENT ================= */
 
-async function loadContent() {
-  try {
-    const res = await fetch(API_URL);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+function renderContent(data) {
+  /* ================= SETTINGS ================= */
+  const s = data.settings;
 
-    /* ================= SETTINGS ================= */
-    const s = data.settings;
+  safeSetInnerText("hero_title", s.hero_title);
+  safeSetInnerText("hero_tagline", s.hero_tagline);
 
-    safeSetInnerText("hero_title", s.hero_title);
-    safeSetInnerText("hero_tagline", s.hero_tagline);
+  const heroBtn = document.getElementById("hero_button");
+  if (heroBtn) {
+    heroBtn.innerText = s.hero_button_text || "";
+    heroBtn.href = s.hero_button_link || "#";
+  }
 
-    const heroBtn = document.getElementById("hero_button");
-    if (heroBtn) {
-      heroBtn.innerText = s.hero_button_text || "";
-      heroBtn.href = s.hero_button_link || "#";
-    }
+  safeSetInnerHTML("about_heading", s.about_heading);
+  safeSetInnerText("about_para_1", s.about_para_1);
+  safeSetInnerText("about_para_2", s.about_para_2);
+  safeSetInnerText("contact_email", s.contact_email);
+  safeSetInnerText("contact_phone", s.contact_phone);
+  safeSetInnerHTML("album_title", s.album_title);
+  safeSetInnerText("album_description", s.album_description);
 
-    safeSetInnerHTML("about_heading", s.about_heading);
-    safeSetInnerText("about_para_1", s.about_para_1);
-    safeSetInnerText("about_para_2", s.about_para_2);
-    safeSetInnerText("contact_email", s.contact_email);
-    safeSetInnerText("contact_phone", s.contact_phone);
-    safeSetInnerHTML("album_title", s.album_title);
-    safeSetInnerText("album_description", s.album_description);
+  const albumBtn = document.getElementById("album_button");
+  if (albumBtn) {
+    albumBtn.innerText = s.album_button_text || "Listen Now";
+    albumBtn.href = s.album_button_link || "#";
+  }
 
-    const albumBtn = document.getElementById("album_button");
-    if (albumBtn) {
-      albumBtn.innerText = s.album_button_text || "Listen Now";
-      albumBtn.href = s.album_button_link || "#";
-    }
+  safeSetInnerHTML("vision_heading", s.vision_heading);
+  safeSetInnerText("vision_text", s.vision_text);
 
-    safeSetInnerHTML("vision_heading", s.vision_heading);
-    safeSetInnerText("vision_text", s.vision_text);
-
-    /* ================= JOURNEY ================= */
-    const journeyContainer = document.getElementById("journey_slides");
-    if (journeyContainer && Array.isArray(data.journey)) {
-      journeyContainer.innerHTML = data.journey
-        .map(
-          (item) => `
+  /* ================= JOURNEY ================= */
+  const journeyContainer = document.getElementById("journey_slides");
+  if (journeyContainer && Array.isArray(data.journey)) {
+    journeyContainer.innerHTML = data.journey
+      .map(
+        (item) => `
         <div class="slide" style="background-image:url('/img/${item.image}')">
           <h3>${item.year}</h3>
           <p>${item.description}</p>
         </div>`
-        )
-        .join("");
+      )
+      .join("");
 
-      slideIndex = 0;
-      setTimeout(initSlider, 100);
-    }
+    slideIndex = 0;
+    setTimeout(initSlider, 100);
+  }
 
-    /* ================= STATS ================= */
-    const statsContainer = document.getElementById("stats_container");
-    if (statsContainer && Array.isArray(data.stats)) {
-      statsContainer.innerHTML = data.stats
-        .map(
-          (stat) => `
+  /* ================= STATS ================= */
+  const statsContainer = document.getElementById("stats_container");
+  if (statsContainer && Array.isArray(data.stats)) {
+    statsContainer.innerHTML = data.stats
+      .map(
+        (stat) => `
           <div class="card">
             <h3>${stat.number}</h3>
             <p>${stat.label}</p>
           </div>`
-        )
-        .join("");
-    }
+      )
+      .join("");
+  }
 
-    /* ================= GOALS ================= */
-    const goalsContainer = document.querySelector(".goal-cards");
-    if (goalsContainer && Array.isArray(data.goals)) {
-      goalsContainer.innerHTML = data.goals
-        .map(
-          (goal) => `
+  /* ================= GOALS ================= */
+  const goalsContainer = document.querySelector(".goal-cards");
+  if (goalsContainer && Array.isArray(data.goals)) {
+    goalsContainer.innerHTML = data.goals
+      .map(
+        (goal) => `
           <div class="goal">
             <h3>${goal.title}</h3>
             <p>${goal.description}</p>
           </div>`
-        )
-        .join("");
-    }
+      )
+      .join("");
+  }
 
-    /* ================= MUSIC ================= */
-    const albumContainer = document.getElementById("album_iframe");
-    const singlesContainer = document.getElementById("singles_container");
+  /* ================= MUSIC ================= */
+  const albumContainer = document.getElementById("album_iframe");
+  const singlesContainer = document.getElementById("singles_container");
 
-    if (albumContainer) albumContainer.innerHTML = "";
-    if (singlesContainer) singlesContainer.innerHTML = "";
+  if (albumContainer) albumContainer.innerHTML = "";
+  if (singlesContainer) singlesContainer.innerHTML = "";
 
-    if (Array.isArray(data.music_iframes)) {
-      data.music_iframes.forEach((item) => {
-        if (item.type === "album") {
-          if (albumContainer) albumContainer.innerHTML = item.embed_code;
-        } else {
-          if (singlesContainer) singlesContainer.innerHTML += item.embed_code;
-        }
-      });
-    }
+  if (Array.isArray(data.music_iframes)) {
+    data.music_iframes.forEach((item) => {
+      if (item.type === "album") {
+        if (albumContainer) albumContainer.innerHTML = item.embed_code;
+      } else {
+        if (singlesContainer) singlesContainer.innerHTML += item.embed_code;
+      }
+    });
+  }
 
-    /* ================= VIDEOS ================= */
-    const videoBento = document.getElementById("video_bento");
-    if (videoBento && data.videos) {
-      const v = data.videos;
+  /* ================= VIDEOS ================= */
+  const videoBento = document.getElementById("video_bento");
+  if (videoBento && data.videos) {
+    const v = data.videos;
 
-      function createYoutubeThumbnail(url) {
-        const id = getYoutubeId(url);
-        if (!id) return "";
-        return `
+    function createYoutubeThumbnail(url) {
+      const id = getYoutubeId(url);
+      if (!id) return "";
+      return `
           <div class="video-wrapper" data-video-id="${id}">
             <img src="https://img.youtube.com/vi/${id}/hqdefault.jpg"
                  onerror="this.src='https://img.youtube.com/vi/${id}/0.jpg'"
@@ -138,9 +172,9 @@ async function loadContent() {
                  class="video-thumb">
           </div>
         `;
-      }
+    }
 
-      videoBento.innerHTML = `
+    videoBento.innerHTML = `
         <div class="bento-item feature-video">
             ${createYoutubeThumbnail(v.video_feature_embed)}
             <div class="v-label">FEATURED RELEASE</div>
@@ -152,84 +186,84 @@ async function loadContent() {
         <div class="bento-item">${createYoutubeThumbnail(v.video_5_embed)}</div>
       `;
 
-      // Hover effect with auto-play
-      const bentoItems = videoBento.querySelectorAll(".bento-item");
-      bentoItems.forEach((item) => {
-        const wrapper = item.querySelector(".video-wrapper");
-        if (!wrapper) return;
+    // Hover effect with auto-play
+    const bentoItems = videoBento.querySelectorAll(".bento-item");
+    bentoItems.forEach((item) => {
+      const wrapper = item.querySelector(".video-wrapper");
+      if (!wrapper) return;
 
-        let opacityTimeout = null;
+      let opacityTimeout = null;
 
-        item.addEventListener("mouseenter", () => {
-          videoBento.classList.add("has-hover");
-          item.classList.add("hovered");
+      item.addEventListener("mouseenter", () => {
+        videoBento.classList.add("has-hover");
+        item.classList.add("hovered");
 
-          // Pause swiper
-          if (shortsSwiper && shortsSwiper.autoplay) {
-            shortsSwiper.autoplay.stop();
-          }
+        // Pause swiper
+        if (shortsSwiper && shortsSwiper.autoplay) {
+          shortsSwiper.autoplay.stop();
+        }
 
-          // Inject iframe
-          const videoId = wrapper.dataset.videoId;
-          const iframe = document.createElement("iframe");
-          iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0`;
-          iframe.allow = "autoplay";
-          iframe.style.opacity = "0";
-          wrapper.appendChild(iframe);
+        // Inject iframe
+        const videoId = wrapper.dataset.videoId;
+        const iframe = document.createElement("iframe");
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0`;
+        iframe.allow = "autoplay";
+        iframe.style.opacity = "0";
+        wrapper.appendChild(iframe);
 
-          opacityTimeout = setTimeout(() => {
-            iframe.style.opacity = "1";
-          }, 100);
-        });
-
-        item.addEventListener("mouseleave", () => {
-          videoBento.classList.remove("has-hover");
-          item.classList.remove("hovered");
-
-          // Clear pending opacity animation
-          if (opacityTimeout) {
-            clearTimeout(opacityTimeout);
-            opacityTimeout = null;
-          }
-
-          // Resume swiper
-          if (shortsSwiper && shortsSwiper.autoplay) {
-            shortsSwiper.autoplay.start();
-          }
-
-          // Remove iframe
-          const iframe = wrapper.querySelector("iframe");
-          if (iframe) iframe.remove();
-        });
+        opacityTimeout = setTimeout(() => {
+          iframe.style.opacity = "1";
+        }, 100);
       });
-    }
 
-    /* ================= SHORTS + REELS ================= */
-    const shortsContainer = document.getElementById("shorts_container");
-    if (shortsContainer && Array.isArray(data.shorts)) {
-      let html = "";
+      item.addEventListener("mouseleave", () => {
+        videoBento.classList.remove("has-hover");
+        item.classList.remove("hovered");
 
-      data.shorts.forEach((item) => {
-        let embed = "";
+        // Clear pending opacity animation
+        if (opacityTimeout) {
+          clearTimeout(opacityTimeout);
+          opacityTimeout = null;
+        }
 
-        /* ===== YOUTUBE SHORTS ===== */
-        if (item.platform === "youtube") {
-          const id = getYoutubeId(item.url);
-          if (id) {
-            embed = `
+        // Resume swiper
+        if (shortsSwiper && shortsSwiper.autoplay) {
+          shortsSwiper.autoplay.start();
+        }
+
+        // Remove iframe
+        const iframe = wrapper.querySelector("iframe");
+        if (iframe) iframe.remove();
+      });
+    });
+  }
+
+  /* ================= SHORTS + REELS ================= */
+  const shortsContainer = document.getElementById("shorts_container");
+  if (shortsContainer && Array.isArray(data.shorts)) {
+    let html = "";
+
+    data.shorts.forEach((item) => {
+      let embed = "";
+
+      /* ===== YOUTUBE SHORTS ===== */
+      if (item.platform === "youtube") {
+        const id = getYoutubeId(item.url);
+        if (id) {
+          embed = `
               <iframe
                 src="https://www.youtube.com/embed/${id}"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen>
               </iframe>
             `;
-          }
         }
+      }
 
-        /* ===== INSTAGRAM REELS ===== */
-        if (item.platform === "instagram") {
-          const cleanUrl = item.url.split("?")[0];
-          embed = `
+      /* ===== INSTAGRAM REELS ===== */
+      if (item.platform === "instagram") {
+        const cleanUrl = item.url.split("?")[0];
+        embed = `
             <blockquote
               class="instagram-media"
               data-instgrm-permalink="${cleanUrl}"
@@ -237,22 +271,46 @@ async function loadContent() {
               style="background:#000; border:0; margin:0 auto; max-width:100%;">
             </blockquote>
           `;
-        }
-
-        if (embed) {
-          html += `<div class="swiper-slide">${embed}</div>`;
-        }
-      });
-
-      shortsContainer.innerHTML = html;
-
-      // Re-process Instagram embeds
-      if (window.instgrm) {
-        window.instgrm.Embeds.process();
       }
 
-      initSwiper();
+      if (embed) {
+        html += `<div class="swiper-slide">${embed}</div>`;
+      }
+    });
+
+    shortsContainer.innerHTML = html;
+
+    // Re-process Instagram embeds
+    if (window.instgrm) {
+      window.instgrm.Embeds.process();
     }
+
+    initSwiper();
+  }
+}
+
+/* ================= MAIN LOADER (CACHE-FIRST) ================= */
+
+async function loadContent() {
+  // Try to serve from cache first
+  const cachedData = getCachedData();
+  if (cachedData) {
+    console.log("Serving content from cache");
+    renderContent(cachedData);
+    return;
+  }
+
+  // Cache miss or expired — fetch from API
+  try {
+    console.log("Fetching content from API");
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    // Store in cache before rendering
+    setCachedData(data);
+
+    renderContent(data);
   } catch (error) {
     console.error("Failed to load content:", error);
     const formStatus = document.getElementById("formStatus");
