@@ -1,6 +1,7 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbx53c-qnxjUMB_T5p8xZrxaMvXxATvDW5rxjUbIqp9p0mA7oJGrxyB8MH0-4IMvJq9Piw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyN9F8GOArqcGoWncE21YkITdBEEezpmwymdto7z-xMRQt2XhVCHOrS-zr1BoDQ_13y/exec";
 const CACHE_KEY = "asb_portfolio_data";
 const CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+// const API_URL = "my_api_url";
 
 let slideIndex = 0;
 let sliderInterval = null;
