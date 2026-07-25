@@ -1,4 +1,6 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbx53c-qnxjUMB_T5p8xZrxaMvXxATvDW5rxjUbIqp9p0mA7oJGrxyB8MH0-4IMvJq9Piw/exec";
+// const API_URL = "https://script.google.com/macros/s/AKfycbx53c-qnxjUMB_T5p8xZrxaMvXxATvDW5rxjUbIqp9p0mA7oJGrxyB8MH0-4IMvJq9Piw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyN9F8GOArqcGoWncE21YkITdBEEezpmwymdto7z-xMRQt2XhVCHOrS-zr1BoDQ_13y/exec";
+// const API_URL = "my_api_url";
 
 let slideIndex = 0;
 let totalSlides = 0;
