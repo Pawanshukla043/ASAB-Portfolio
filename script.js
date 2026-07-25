@@ -64,7 +64,15 @@ function safeSetInnerText(idOrEl, content) {
 
 /* ================= RENDER CONTENT ================= */
 
+function hideLoader() {
+  const loader = document.getElementById("loader");
+  if (loader) {
+    loader.classList.add("loaded");
+  }
+}
+
 function renderContent(data) {
+  hideLoader();
   /* ================= SETTINGS ================= */
   const s = data.settings;
 
@@ -313,6 +321,7 @@ async function loadContent() {
     renderContent(data);
   } catch (error) {
     console.error("Failed to load content:", error);
+    hideLoader();
     const formStatus = document.getElementById("formStatus");
     if (formStatus) {
       formStatus.textContent = "⚠ Failed to load content. Please refresh or try again later.";
