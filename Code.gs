@@ -162,7 +162,8 @@ function doGet(e) {
       music_iframes: getSheetObjects(ss, "music_iframes"),
       videos: getSheetData(ss, "videos"),
       shorts: getSheetObjects(ss, "shorts"),
-      goals: getSheetObjects(ss, "goals")
+      goals: getSheetObjects(ss, "goals"),
+      accounts: getSheetObjects(ss, "accounts")
     };
     const json = JSON.stringify(response);
     // Cache for 5 minutes (300 seconds)
