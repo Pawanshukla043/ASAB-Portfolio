@@ -643,12 +643,17 @@ body {
 }
 
 .footer-col ul {
-  list-style: none;
   padding: 0;
+  color: #237cc4;
+}
+
+.footer-col ul :hover {
+  color: #eef1f3;
 }
 
 .footer-col ul li {
   margin-bottom: 10px;
+  margin-left: 10px;
 }
 
 .footer-col ul li a {
@@ -746,6 +751,11 @@ body {
   border-top: 1px solid #222;
   color: #888;
   font-size: 14px;
+}
+.footer-manue{
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 768px) {
