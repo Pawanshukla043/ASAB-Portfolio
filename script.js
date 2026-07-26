@@ -1,7 +1,41 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyN9F8GOArqcGoWncE21YkITdBEEezpmwymdto7z-xMRQt2XhVCHOrS-zr1BoDQ_13y/exec";
+/**
+ * ============================================================
+ *  CONFIGURATION
+ * ============================================================
+ *
+ *  SECURITY NOTE:
+ *  The API key and origin are sent with every request to the
+ *  backend. The backend (Google Apps Script) reads the
+ *  "allowed_domains" sheet to validate:
+ *    1. The API key exists in the sheet
+ *    2. The domain (origin) matches the key's allowed domains
+ *
+ *  To add/rotate keys or domains — just edit the sheet:
+ *    Sheet name: allowed_domains
+ *    Columns:  secret_key  |  domain
+ *
+ *  IMPORTANT: Keep the API_KEY same across environments
+ *  unless you want different keys per environment.
+ * ============================================================
+ */
+
+const API_URL = "https://script.google.com/macros/s/AKfycbzVH1VogECiwJZhVxz7bL_9pV3BVb0i7pfU5rnS-g_t8q8fauWnY_nsKmAA4wQ-aYo/exec";
+
+/**
+ * ============================================================
+ *  API KEY - Set this to match the secret_key in your sheet
+ * ============================================================
+ *  For local development: use your local key from the sheet
+ *  For production (Vercel): use your production key from the sheet
+ *
+ *  Set this once per environment in the sheet + this file.
+ * ============================================================
+ */
+// const API_KEY = "local_dev_key_2024"; // ← CHANGE THIS for production!
+const API_KEY = "live_prod_key_2024"; // match the row in your sheet
+
 const CACHE_KEY = "asb_portfolio_data";
 const CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
-// const API_URL = "my_api_url";
 
 let slideIndex = 0;
 let sliderInterval = null;
@@ -312,7 +346,7 @@ async function loadContent() {
   // Cache miss or expired — fetch from API
   try {
     console.log("Fetching content from API");
-    const res = await fetch(API_URL);
+    const res = await fetch(`${API_URL}?_key=${encodeURIComponent(API_KEY)}&_origin=${encodeURIComponent(window.location.origin)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
@@ -411,7 +445,7 @@ function renderSocialLinks() {
     {
       name: "Linktree",
       url: "https://beacons.ai/ytiehiphop",
-      icon: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#111111"/><g fill="#ffffff">  <rect x="11" y="4" width="2" height="9"/>  <rect x="11" y="11" width="2" height="9"/>  <rect x="4" y="11" width="9" height="2"/>  <rect x="11" y="11" width="9" height="2"/> <rect x="8" y="5" width="2" height="8" transform="rotate(-45 7.2 10.2)"/>  <rect x="14" y="5" width="2" height="8" transform="rotate(45 16.8 10.2)"/></g></svg>',
+      icon: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g fill="#ffffff">  <rect x="11" y="4" width="2" height="9"/>  <rect x="11" y="11" width="2" height="12"/>  <rect x="4" y="11" width="9" height="2"/>  <rect x="11" y="11" width="9" height="2"/> <rect x="8" y="5" width="2" height="8" transform="rotate(-45 7.2 10.2)"/>  <rect x="14" y="5" width="2" height="8" transform="rotate(45 16.8 10.2)"/></g></svg>',
     },
   ];
 
@@ -447,7 +481,11 @@ function initContactForm() {
     try {
       const response = await fetch(API_URL, {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          _key: API_KEY,
+          _origin: window.location.origin
+        }),
       });
 
       const result = await response.json();
